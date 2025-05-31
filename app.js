@@ -4,7 +4,7 @@ const indexRouter = require('./routes/index');
 const appInsights = require('applicationinsights');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const instrKey = process.env.APPINSIGHTS_INSTRUMENTATIONKEY || process.env.APPLICATIONINSIGHTS_CONNECTION_STRING;
 
