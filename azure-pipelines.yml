@@ -7,8 +7,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  azureSubscription: '<cicd-forta-connection>'  # ganti sesuai nama service connection Azure kamu di Azure DevOps
-  appName: '<alphasecio-nodejs-forta>'                        # nama Azure App Service kamu
+  azureSubscription: 'cicd-forta-connection'  # ganti sesuai nama service connection Azure kamu di Azure DevOps
+  appName: 'alphasecio-nodejs-forta'                        # nama Azure App Service kamu
   packageFolder: '.'                                   # folder project (root)
 
 steps:
