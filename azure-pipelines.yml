@@ -1,0 +1,38 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  azureSubscription: '<cicd-forta-connection>'  # ganti sesuai nama service connection Azure kamu di Azure DevOps
+  appName: '<alphasecio-nodejs-forta>'                        # nama Azure App Service kamu
+  packageFolder: '.'                                   # folder project (root)
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '20.x'   # versi node sesuai project kamu
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install
+  displayName: 'Install dependencies'
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(packageFolder)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(appName).zip'
+    replaceExistingArchive: true
+  displayName: 'Archive files'
+
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    appName: '$(appName)'
+    package: '$(Build.ArtifactStagingDirectory)/$(appName).zip'
+  displayName: 'Deploy to Azure Web App'
