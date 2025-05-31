@@ -43,7 +43,10 @@ jobs:
             until curl -s http://localhost:3000 > /dev/null; do
               if [ $SECONDS -ge $TIMEOUT ]; then
                 echo "App did not respond in time"
-                kill $APP_PID $PIDSTAT_PID
+                echo "App log output:"
+                cat app.log || echo "No app.log file"
+                kill $PIDSTAT_PID || true
+                kill $APP_PID || true
                 exit 1
               fi
               sleep 1
@@ -52,8 +55,8 @@ jobs:
             echo "App responded after $SECONDS seconds"
             echo "TIME_TO_FIRST_RESPONSE=$SECONDS" >> $BASH_ENV
 
-            kill $PIDSTAT_PID
-            kill $APP_PID
+            kill $PIDSTAT_PID || true
+            kill $APP_PID || true
 
       - run:
           name: Measure end time
