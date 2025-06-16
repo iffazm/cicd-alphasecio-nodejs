@@ -4,22 +4,28 @@ trigger:
       - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  name: Default
 
 variables:
-  azureSubscription: 'cicd-forta-connection'  # ganti sesuai nama service connection Azure kamu di Azure DevOps
-  appName: 'alphasecio-nodejs-forta'                        # nama Azure App Service kamu
-  packageFolder: '.'                                   # folder project (root)
+  azureSubscription: 'cicd-forta-connection'
+  appName: 'alphasecio-nodejs-forta'
+  packageFolder: '.'
 
 steps:
+- script: |
+    echo "=== Start Monitoring CPU & Memory Usage ==="
+    nohup top -b -d 1 > top_output.log &
+    echo $! > top_pid.txt
+  displayName: 'Start Resource Monitoring'
+
 - task: NodeTool@0
   inputs:
-    versionSpec: '20.x'   # versi node sesuai project kamu
+    versionSpec: '20.x'
   displayName: 'Install Node.js'
 
 - script: |
     npm install
-  displayName: 'Install dependencies'
+  displayName: 'Install Dependencies'
 
 - task: ArchiveFiles@2
   inputs:
@@ -28,7 +34,7 @@ steps:
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(appName).zip'
     replaceExistingArchive: true
-  displayName: 'Archive files'
+  displayName: 'Archive Files'
 
 - task: AzureWebApp@1
   inputs:
@@ -36,3 +42,17 @@ steps:
     appName: '$(appName)'
     package: '$(Build.ArtifactStagingDirectory)/$(appName).zip'
   displayName: 'Deploy to Azure Web App'
+
+- script: |
+    echo "=== Stop Monitoring and Show Summary ==="
+    kill -9 $(cat top_pid.txt)
+
+    echo "=== Summary CPU and Memory Usage ==="
+    echo "NOTE: This is a summary based on all outputs from 'top' command"
+
+    echo "Total CPU usage (avg %):"
+    awk '/^%Cpu/ { sum += $2 } END { print sum/NR }' top_output.log
+
+    echo "Total MEM usage (avg %):"
+    awk '/KiB Mem/ { used+=$8 } END { print used/NR }' top_output.log || echo "Gunakan metode pemrosesan manual jika parsing gagal"
+  displayName: 'Stop Monitoring & Show Summary'

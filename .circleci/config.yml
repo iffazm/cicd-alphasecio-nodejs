@@ -7,13 +7,13 @@ executors:
     resource_class: medium
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     executor: node-executor
     steps:
       - checkout
 
       - run:
-          name: Measure start time
+          name: Measure CI/CD Start Time
           command: echo "START_TIME=$(date +%s)" >> $BASH_ENV
 
       - run:
@@ -21,69 +21,43 @@ jobs:
           command: npm install
 
       - run:
-          name: Install pidstat (sysstat) for CPU/Memory monitoring
+          name: Install pidstat for CPU/Memory monitoring
           command: |
             sudo apt-get update
-            sudo apt-get install -y sysstat
+            sudo apt-get install -y sysstat curl
 
       - run:
-          name: Start app & monitor CPU/memory + Time to First Response
+          name: Monitor overall CPU/Memory during CI & CD
           command: |
-            npm start > app.log 2>&1 &
-            APP_PID=$!
-
-            echo "App started with PID: $APP_PID"
-
-            # Start pidstat
-            pidstat -r -u -p $APP_PID 1 30 > usage.log &
+            # Start resource monitoring for the whole job (every 1 sec, 60 samples)
+            pidstat -r -u -h 1 60 > usage.log &
             PIDSTAT_PID=$!
-
-            TIMEOUT=30
-            SECONDS=0
-            until curl -s http://localhost:3000 > /dev/null; do
-              if [ $SECONDS -ge $TIMEOUT ]; then
-                echo "App did not respond in time"
-                echo "App log output:"
-                cat app.log || echo "No app.log file"
-                kill $PIDSTAT_PID || true
-                kill $APP_PID || true
-                exit 1
-              fi
-              sleep 1
-            done
-
-            echo "App responded after $SECONDS seconds"
-            echo "TIME_TO_FIRST_RESPONSE=$SECONDS" >> $BASH_ENV
-
-            kill $PIDSTAT_PID || true
-            kill $APP_PID || true
+            echo "PIDSTAT_PID=$PIDSTAT_PID" >> $BASH_ENV
 
       - run:
-          name: Measure end time
+          name: Deploy to Railway (CD process)
           command: |
-            END_TIME=$(date +%s)
+            npm install -g railway
+            railway login --ci <<< "$RAILWAY_TOKEN"
+            railway up
+
+      - run:
+          name: Stop Monitoring & Measure End Time
+          command: |
             source $BASH_ENV
+            kill $PIDSTAT_PID || true
+
+            END_TIME=$(date +%s)
             TOTAL_TIME=$((END_TIME - START_TIME))
             echo "=============================="
-            echo "Total pipeline time: $TOTAL_TIME seconds"
-            echo "Time to first response: $TIME_TO_FIRST_RESPONSE seconds"
+            echo "Total CI + CD Time: $TOTAL_TIME seconds"
             echo "=============================="
-
-      - run:
-          name: Test app response
-          command: |
-            npm start > app.log 2>&1 &
-            APP_PID=$!
-            sleep 3
-            echo ">>> Response from app:"
-            curl -s http://localhost:3000
-            kill $APP_PID
 
       - store_artifacts:
           path: usage.log
           destination: cpu-memory-usage
 
 workflows:
-  build_and_test:
+  ci_cd_pipeline:
     jobs:
-      - build-and-test
+      - build-and-deploy
