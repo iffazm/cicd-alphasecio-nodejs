@@ -35,7 +35,7 @@ jobs:
       - run:
           name: Install Railway
           command: |
-            npm install -g @railway/cli@1.7.1
+            npm install -g @railway/cli
 
       - run:
           name: Deploy to Railway (CD process)
