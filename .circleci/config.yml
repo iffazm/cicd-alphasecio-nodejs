@@ -27,18 +27,17 @@ jobs:
             sudo apt-get install -y sysstat curl
 
       - run:
-          name: Monitor overall CPU/Memory during CI & CD
+          name: Start Monitoring CPU/Memory
+          background: true
           command: |
-            # Start resource monitoring for the whole job (every 1 sec, 60 samples)
-            pidstat -r -u -h 1 60 > usage.log &
-            PIDSTAT_PID=$!
-            echo "PIDSTAT_PID=$PIDSTAT_PID" >> $BASH_ENV
+            pidstat -r -u -h 1 300 > usage.log &
+            echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
           name: Deploy to Railway (CD process)
           command: |
-            npm install -g railway
-            railway login --ci <<< "$RAILWAY_TOKEN"
+            npm install -g @railway/cli
+            echo "$RAILWAY_TOKEN" | railway login --ci
             railway up
 
       - run:
