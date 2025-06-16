@@ -37,7 +37,7 @@ jobs:
           name: Deploy to Railway (CD process)
           command: |
             npm install -g @railway/cli
-            railway login --browserless --apiToken $RAILWAY_TOKEN
+            railway login --browserless --token $RAILWAY_TOKEN
             railway up
 
       - run:
