@@ -37,8 +37,7 @@ jobs:
           name: Deploy to Railway (CD process)
           command: |
             npm install -g @railway/cli
-            echo $RAILWAY_TOKEN | railway login --browserless
-            railway up
+            railway up --yes --token=$RAILWAY_TOKEN
 
       - run:
           name: Stop Monitoring & Measure End Time
