@@ -31,11 +31,15 @@ jobs:
           command: |
             pidstat -r -u -h 1 300 > usage.log &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
-        
+
       - run:
-          name: Install Railway and Deploy to Railway (CD process)
+          name: Install Railway
           command: |
-            npm install -g @railway/cli
+            npm install -g @railway/cli@1.7.1
+
+      - run:
+          name: Deploy to Railway (CD process)
+          command: |
             railway up 
           env:
             RAILWAY_TOKEN: $RAILWAY_TOKEN
