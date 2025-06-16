@@ -31,23 +31,14 @@ jobs:
           command: |
             pidstat -r -u -h 1 300 > usage.log &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
-
-      - run:
-          name: Output Railway Token
-          command: |
-            echo "$RAILWAY_TOKEN"
-
-      - run:
-          name: Install Railway CLI
-          command: npm install -g @railway/cli
-
-      - run:
-          name: Link to Railway Project and service
-          command: railway link --project 1344837f-8029-46fb-bc80-4a1260dd870c --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4
         
       - run:
-          name: Deploy to Railway (CD process)
-          command: railway up 
+          name: Install Railway and Deploy to Railway (CD process)
+          command: |
+            npm install -g @railway/cli
+            railway up 
+          env:
+            RAILWAY_TOKEN: $RAILWAY_TOKEN
 
       - run:
           name: Stop Monitoring & Measure End Time
