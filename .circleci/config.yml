@@ -11,7 +11,6 @@ jobs:
     executor: node-executor
     steps:
       - checkout
-
       - run:
           name: Measure CI/CD Start Time
           command: echo "START_TIME=$(date +%s)" >> $BASH_ENV
@@ -34,13 +33,21 @@ jobs:
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
-          name: Deploy to Railway (CD process)
-          env:
-            # RAILWAY_TOKEN: $RAILWAY_TOKEN
-            RAILWAY_TOKEN: 36b1648a-c406-4a11-9ab6-d48d19ef962a
+          name: Output Railway Token
           command: |
-            npm install -g @railway/cli
-            railway up --service=fab5a752-14e9-4e05-9f95-4499ed6e7cd4
+            echo "$RAILWAY_TOKEN"
+
+      - run:
+          name: Install Railway CLI
+          command: npm install -g @railway/cli
+
+      - run:
+          name: Link to Railway Project and service
+          command: railway link --project 1344837f-8029-46fb-bc80-4a1260dd870c --fab5a752-14e9-4e05-9f95-4499ed6e7cd4
+        
+      - run:
+          name: Deploy to Railway (CD process)
+          command: railway up 
 
       - run:
           name: Stop Monitoring & Measure End Time
