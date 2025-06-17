@@ -20,8 +20,6 @@ jobs:
             mkdir /tmp/artifacts;
             echo "my artifact files in a dir" > /tmp/artifacts/artifact-2;
       
-      - store_artifacts
-
       - run:
           name: Measure CI/CD Start Time
           command: echo "START_TIME=$(date +%s)" >> $BASH_ENV
