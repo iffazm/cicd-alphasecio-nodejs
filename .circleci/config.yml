@@ -27,8 +27,9 @@ jobs:
 
       - run:
           name: Start Monitoring CPU/Memory
+          background: true
           command: |
-            pidstat -r -u -h 1 60 > ./usage.log &
+            pidstat -r -u -h 1 60 > /tmp/artifacts/usage.log &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
@@ -56,10 +57,11 @@ jobs:
             echo "Total CI + CD Time: $TOTAL_TIME seconds"
             echo "=============================="
 
-            ls -lah ./usage.log || echo "usage.log not found!"
+            echo "Listing contents of /tmp/artifacts"
+            ls -lah /tmp/artifacts"
 
       - store_artifacts:
-          path: ./usage.log
+          path: /tmp/artifacts
           destination: cpu-memory-usage
 
 workflows:
