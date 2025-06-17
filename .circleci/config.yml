@@ -13,8 +13,8 @@ jobs:
       - checkout
 
       - run:
-        name: Set up artifact directory
-        command: mkdir -p artifacts
+          name: Set up artifact directory
+          command: mkdir -p artifacts
 
       - run:
           name: Measure CI/CD Start Time
