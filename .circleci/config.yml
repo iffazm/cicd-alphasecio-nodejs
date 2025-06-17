@@ -28,7 +28,7 @@ jobs:
       - run:
           name: Start Monitoring CPU/Memory
           command: |
-            pidstat -r -u -h 1 180 > usage.log &
+            pidstat -r -u -h 1 60 > ./usage.log &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
@@ -47,6 +47,7 @@ jobs:
           name: Stop Monitoring & Measure End Time
           command: |
             source $BASH_ENV
+            sleep 2
             kill $PIDSTAT_PID || true
 
             END_TIME=$(date +%s)
@@ -55,8 +56,10 @@ jobs:
             echo "Total CI + CD Time: $TOTAL_TIME seconds"
             echo "=============================="
 
+            ls -lah ./usage.log || echo "usage.log not found!"
+
       - store_artifacts:
-          path: usage.log
+          path: ./usage.log
           destination: cpu-memory-usage
 
 workflows:
