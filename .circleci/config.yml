@@ -27,10 +27,10 @@ jobs:
 
       - run:
           name: Start Monitoring CPU/Memory
-          background: true
           command: |
+            echo "Starting pidstat..."
             mkdir -p /tmp/artifacts
-            pidstat -r -u -h 1 60 > /tmp/artifacts/usage.log &
+            pidstat -r -u -h 1 60 > $CIRCLE_ARTIFACTS/usage.log &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
@@ -49,7 +49,6 @@ jobs:
           name: Stop Monitoring & Measure End Time
           command: |
             source $BASH_ENV
-            sleep 2
             kill $PIDSTAT_PID || true
 
             END_TIME=$(date +%s)
@@ -58,11 +57,11 @@ jobs:
             echo "Total CI + CD Time: $TOTAL_TIME seconds"
             echo "=============================="
 
-            echo "Listing contents of /tmp/artifacts"
-            ls -lah /tmp/artifacts"
+            echo "Listing artifact folder:"
+            ls -lah $CIRCLE_ARTIFACTS"
 
       - store_artifacts:
-          path: /tmp/artifacts
+          path: usage.log
           destination: cpu-memory-usage
 
 workflows:
