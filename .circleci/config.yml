@@ -13,10 +13,6 @@ jobs:
       - checkout
 
       - run:
-          name: Set up artifact directory
-          command: mkdir -p artifacts
-
-      - run:
           name: Measure CI/CD Start Time
           command: echo "START_TIME=$(date +%s)" >> $BASH_ENV
 
@@ -33,7 +29,7 @@ jobs:
       - run:
           name: Start Monitoring CPU/Memory
           command: |
-            ( pidstat -r -u -h 1 60 > artifacts/usage.log ) &
+            pidstat -r -u -p 1 30 > usage.log &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
@@ -60,11 +56,8 @@ jobs:
             echo "Total CI + CD Time: $TOTAL_TIME seconds"
             echo "=============================="
 
-            echo "Listing artifacts dir:"
-            ls -lah artifacts
-
       - store_artifacts:
-          path: artifacts/usage.log
+          path: usage.log
           destination: cpu-memory-usage
 
 workflows:
