@@ -9,7 +9,7 @@ executors:
 jobs:
   build-and-deploy:
     executor: node-executor
-    working_dir: /tmp
+    working_directory: /tmp
     steps:
       - checkout
 
