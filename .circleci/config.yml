@@ -38,17 +38,10 @@ jobs:
             npm install -g @railway/cli
 
       - run:
-          name: Link Railway Project and Service
-          command: |
-            railway link -p 1344837f-8029-46fb-bc80-4a1260dd870c -s fab5a752-14e9-4e05-9f95-4499ed6e7cd4
-          env:
-            RAILWAY_TOKEN: $RAILWAY_TOKEN
-
-      - run:
           name: Deploy to Railway (CD process)
           command: |
-            railway up -d 
-          env:
+            railway up --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4 -d 
+          environment:
             RAILWAY_TOKEN: $RAILWAY_TOKEN
 
       - run:
