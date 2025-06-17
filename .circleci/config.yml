@@ -27,9 +27,8 @@ jobs:
 
       - run:
           name: Start Monitoring CPU/Memory
-          background: true
           command: |
-            pidstat -r -u -h 1 300 > usage.log &
+            pidstat -r -u -h 1 180 > usage.log &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
