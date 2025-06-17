@@ -29,6 +29,7 @@ jobs:
           name: Start Monitoring CPU/Memory
           background: true
           command: |
+            mkdir -p /tmp/artifacts
             pidstat -r -u -h 1 60 > /tmp/artifacts/usage.log &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
