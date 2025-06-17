@@ -11,6 +11,11 @@ jobs:
     executor: node-executor
     steps:
       - checkout
+
+      - run:
+        name: Set up artifact directory
+        command: mkdir -p artifacts
+
       - run:
           name: Measure CI/CD Start Time
           command: echo "START_TIME=$(date +%s)" >> $BASH_ENV
@@ -27,10 +32,9 @@ jobs:
 
       - run:
           name: Start Monitoring CPU/Memory
+          background: true
           command: |
-            echo "Starting pidstat..."
-            mkdir -p /tmp/artifacts
-            pidstat -r -u -h 1 60 > $CIRCLE_ARTIFACTS/usage.log &
+            pidstat -r -u -h 1 60 > artifacts/usage.log &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
@@ -57,11 +61,11 @@ jobs:
             echo "Total CI + CD Time: $TOTAL_TIME seconds"
             echo "=============================="
 
-            echo "Listing artifact folder:"
-            ls -lah $CIRCLE_ARTIFACTS"
+            echo "Listing artifacts dir:"
+            ls -lah artifacts
 
       - store_artifacts:
-          path: usage.log
+          path: artifacts/usage.log
           destination: cpu-memory-usage
 
 workflows:
