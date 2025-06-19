@@ -26,20 +26,22 @@ jobs:
             sudo apt-get install -y sysstat curl
 
       - run:
-          name: Start Railway & Monitor Resources
+          name: Start Monitoring CPU/Memory
           command: |
-            echo "START_TIME=$(date +%s)" >> $BASH_ENV
+            pidstat -r -u -p 1 60 > usage.log &
+            echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
-            railway up --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4 -d &
-            APP_PID=$!
+      - run:
+          name: Install Railway
+          command: |
+            npm install -g @railway/cli
 
-            pidstat -r -u -h -p $APP_PID 1 > usage.log &
-            PIDSTAT_PID=$!
-
-            wait $APP_PID
-            kill $PIDSTAT_PID || true
-
-            echo "PIDSTAT_PID=$PIDSTAT_PID" >> $BASH_ENV
+      - run:
+          name: Deploy to Railway (CD process)
+          command: |
+            railway up --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4 -d 
+          environment:
+            RAILWAY_TOKEN: b3f08ed2-38e9-4d90-beb4-e66080321082
 
       - run:
           name: Stop Monitoring & Measure End Time
@@ -54,8 +56,9 @@ jobs:
             echo "=============================="
 
       - run:
-          name: check usage.log
+          name: Check usage.log
           command: cat usage.log
+
 
       - store_artifacts:
           path: usage.log
@@ -65,3 +68,4 @@ workflows:
   ci_cd_pipeline:
     jobs:
       - build-and-deploy
+
