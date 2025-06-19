@@ -9,17 +9,8 @@ executors:
 jobs:
   build-and-deploy:
     executor: node-executor
-    working_directory: /tmp
     steps:
       - checkout
-
-      - run:
-          name: Set up artifact directory
-          command: |
-            echo "my artifact file" > /tmp/artifact-1;
-            mkdir /tmp/artifacts;
-            echo "my artifact files in a dir" > /tmp/artifacts/artifact-2;
-      
       - run:
           name: Measure CI/CD Start Time
           command: echo "START_TIME=$(date +%s)" >> $BASH_ENV
@@ -36,8 +27,9 @@ jobs:
 
       - run:
           name: Start Monitoring CPU/Memory
+          background: true
           command: |
-            ( pidstat -r -u -h 1 60 > /tmp/artifact-1 ) &
+            pidstat -r -u -h 1 300 > usage.log &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
@@ -63,16 +55,12 @@ jobs:
             echo "=============================="
             echo "Total CI + CD Time: $TOTAL_TIME seconds"
             echo "=============================="
-
-            echo "Listing artifacts dir:"
-            ls -lah artifacts
+            cat usage.log
+            echo "=============================="
 
       - store_artifacts:
-          path: /tmp/artifact-1
+          path: usage.log
           destination: cpu-memory-usage
-      
-      - store_artifacts:
-          path: /tmp/artifacts
 
 workflows:
   ci_cd_pipeline:
