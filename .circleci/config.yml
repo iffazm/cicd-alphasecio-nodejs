@@ -63,8 +63,13 @@ jobs:
             echo "=============================="
 
       - run:
-          name: Check usage.log
-          command: cat usage.log
+          name: Tes pidstat dengan proses dummy
+          command: |
+            sleep 10 &
+            DUMMY_PID=$!
+            pidstat -r -u -p $DUMMY_PID 1 5 > dummy-usage.log
+            cat dummy-usage.log
+
 
 
       - store_artifacts:
