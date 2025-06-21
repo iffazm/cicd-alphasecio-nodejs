@@ -34,13 +34,13 @@ jobs:
           name: Railway Deploy & CPU/Memory Monitoring
           environment:
             RAILWAY_TOKEN: b3f08ed2-38e9-4d90-beb4-e66080321082
-            command: |
-              nohup pidstat -r -u -h 1 60 > usage.log 2>&1 &
-              echo "PIDSTAT_PID=$!" >> $BASH_ENV
+          command: |
+            nohup pidstat -r -u -h 1 60 > usage.log 2>&1 &
+            echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
-              echo "Railway deploy is starting..."
-              railway up --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4 -d > railway.log 2>&1 || echo "Railway deploy failed"
-              echo "Deploy finished."
+            echo "Railway deploy is starting..."
+            railway up --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4 -d > railway.log 2>&1 || echo "Railway deploy failed"
+            echo "Deploy finished."
 
       - run:
           name: Stop Monitoring & Measure End Time
