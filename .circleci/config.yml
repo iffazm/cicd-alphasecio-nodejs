@@ -47,6 +47,7 @@ jobs:
           name: Stop Monitoring & Measure End Time
           command: |
             source $BASH_ENV
+            ps aux | grep pidstat
             kill $PIDSTAT_PID || true
 
             END_TIME=$(date +%s)
