@@ -35,7 +35,7 @@ jobs:
           environment:
             RAILWAY_TOKEN: b3f08ed2-38e9-4d90-beb4-e66080321082
           command: |
-            nohup pidstat -r -u -h 1 60 > usage.log 2>&1 &
+            nohup pidstat -e -r -u -h 1 > usage.log 2>&1 &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
             echo "Railway deploy is starting..."
