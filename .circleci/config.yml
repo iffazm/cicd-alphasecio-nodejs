@@ -16,55 +16,42 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y sysstat curl
-            ps aux | grep pidstat
-
       - run:
-          name: Measure CI/CD Start Time and CPU/Memory Monitoring
+          name: Run Everything
           command: |
-            echo "START_TIME=$(date +%s)" >> $BASH_ENV
+            START_TIME=$(date +%s)
+
+            # Start monitoring
+            echo "Starting pidstat..."
             nohup pidstat -r -u -h 1 > usage.log 2>&1 &
-            echo "PIDSTAT_PID=$!" >> $BASH_ENV
+            PIDSTAT_PID=$!
+            echo "Started pidstat with PID $PIDSTAT_PID"
 
-      - run:
-          name: Install dependencies
-          command: npm install
-
-      - run:
-          name: Install Railway
-          command: |
+            # Simulate actual workload
+            echo "Installing dependencies..."
+            npm install
+            echo "Installing Railway..."
             npm install -g @railway/cli
+            echo "Deploying to Railway..."
+            railway up --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4 -d || echo "Railway deploy failed"
+            echo "Railway deploy finished"
+            
+            # Stop monitoring
+            echo "Stopping pidstat..."
+            kill $PIDSTAT_PID || echo "pidstat already stopped"
 
-      - run:
-          name: Railway Deploy
-          environment:
-            RAILWAY_TOKEN: b3f08ed2-38e9-4d90-beb4-e66080321082
-          command: |
-            echo "Railway deploy is starting..."
-            railway up --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4 -d > railway.log 2>&1 || echo "Railway deploy failed"
-            echo "Deploy finished."
-
-      - run:
-          name: Stop Monitoring & Measure End Time
-          command: |
-            source $BASH_ENV
-            ps aux | grep pidstat
-            kill $PIDSTAT_PID || true
-
+            # Output results
             END_TIME=$(date +%s)
-            TOTAL_TIME=$((END_TIME - START_TIME))
             echo "=============================="
-            echo "Total CI + CD Time: $TOTAL_TIME seconds"
+            echo "Total CI + CD Time: $((END_TIME - START_TIME)) seconds"
             echo "=============================="
 
-      - run:
-          name: Check usage.log File
-          command: |
+            # Output usage log
             if [ -f usage.log ]; then
-              echo "====usage.log created===="
+              echo "==== usage.log ===="
               cat usage.log
             else
-              echo "===usage.log not created===="
-              ls -lah
+              echo "usage.log not found"
             fi
 
       - store_artifacts:
@@ -75,4 +62,3 @@ workflows:
   ci_cd_pipeline:
     jobs:
       - build-and-deploy
-
