@@ -12,6 +12,12 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Install pidstat for CPU/Memory monitoring
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y sysstat curl
+
+      - run:
           name: Measure CI/CD Start Time and CPU/Memory Monitoring
           command: |
             echo "START_TIME=$(date +%s)" >> $BASH_ENV
@@ -23,18 +29,12 @@ jobs:
           command: npm install
 
       - run:
-          name: Install pidstat for CPU/Memory monitoring
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y sysstat curl
-
-      - run:
           name: Install Railway
           command: |
             npm install -g @railway/cli
 
       - run:
-          name: Railway Deploy & CPU/Memory Monitoring
+          name: Railway Deploy
           environment:
             RAILWAY_TOKEN: b3f08ed2-38e9-4d90-beb4-e66080321082
           command: |
@@ -55,7 +55,7 @@ jobs:
             echo "=============================="
 
       - run:
-          name: Check usage.log file
+          name: Check usage.log File
           command: |
             if [ -f usage.log ]; then
               echo "====usage.log created===="
