@@ -12,8 +12,11 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Measure CI/CD Start Time
-          command: echo "START_TIME=$(date +%s)" >> $BASH_ENV
+          name: Measure CI/CD Start Time and CPU/Memory Monitoring
+          command: |
+            echo "START_TIME=$(date +%s)" >> $BASH_ENV
+            nohup pidstat -r -u -h 1 60 > usage.log 2>&1 &
+            echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
           name: Install dependencies
@@ -35,9 +38,6 @@ jobs:
           environment:
             RAILWAY_TOKEN: b3f08ed2-38e9-4d90-beb4-e66080321082
           command: |
-            nohup pidstat -e -r -u -h 1 > usage.log 2>&1 &
-            echo "PIDSTAT_PID=$!" >> $BASH_ENV
-
             echo "Railway deploy is starting..."
             railway up --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4 -d > railway.log 2>&1 || echo "Railway deploy failed"
             echo "Deploy finished."
