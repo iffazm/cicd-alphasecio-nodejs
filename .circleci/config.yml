@@ -22,7 +22,7 @@ jobs:
           name: Measure CI/CD Start Time and CPU/Memory Monitoring
           command: |
             echo "START_TIME=$(date +%s)" >> $BASH_ENV
-            nohup pidstat -r -u -h 1 60 > usage.log 2>&1 &
+            nohup pidstat -r -u -h 1 > usage.log 2>&1 &
             echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
       - run:
