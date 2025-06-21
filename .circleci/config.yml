@@ -16,6 +16,7 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install -y sysstat curl
+            ps aux | grep pidstat
 
       - run:
           name: Measure CI/CD Start Time and CPU/Memory Monitoring
