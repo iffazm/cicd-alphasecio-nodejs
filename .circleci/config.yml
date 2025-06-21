@@ -31,15 +31,16 @@ jobs:
             npm install -g @railway/cli
 
       - run:
-          name: Deploy & Monitor Railway
+          name: Railway Deploy & CPU/Memory Monitoring
           environment:
             RAILWAY_TOKEN: b3f08ed2-38e9-4d90-beb4-e66080321082
-          command: |
-            pidstat -r -u -h 1 60 > usage.log &
-            PIDSTAT_PID=$!
+            command: |
+              nohup pidstat -r -u -h 1 60 > usage.log 2>&1 &
+              echo "PIDSTAT_PID=$!" >> $BASH_ENV
 
-            railway up --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4 -d > railway.log 2>&1 &
-            echo "PIDSTAT_PID=$PIDSTAT_PID" >> $BASH_ENV
+              echo "Railway deploy is starting..."
+              railway up --service fab5a752-14e9-4e05-9f95-4499ed6e7cd4 -d > railway.log 2>&1 || echo "Railway deploy failed"
+              echo "Deploy finished."
 
       - run:
           name: Stop Monitoring & Measure End Time
@@ -55,7 +56,14 @@ jobs:
 
       - run:
           name: Check usage.log file
-          command: cat usage.log
+          command: |
+            if [ -f usage.log ]; then
+              echo "====usage.log created===="
+              cat usage.log
+            else
+              echo "===usage.log not created===="
+              ls -lah
+            fi
 
       - store_artifacts:
           path: usage.log
