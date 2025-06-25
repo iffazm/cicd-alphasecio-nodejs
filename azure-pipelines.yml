@@ -16,7 +16,7 @@ steps:
     echo "AGENT NAME: $(AGENT_NAME)"
     echo "RUNNING ON: $(Agent.MachineName)"
   displayName: 'Info: Agent Info'
-  
+
 - script: |
     echo "=== Record Start Time ==="
     echo "START_TIME=$(date +%s)" >> time.env
@@ -41,6 +41,11 @@ steps:
 - script: |
     npm install
   displayName: 'Install Dependencies'
+
+- script: |
+    sudo apt-get update
+    sudo apt-get install -y zip
+  displayName: 'Install zip utility'
 
 - task: ArchiveFiles@2
   inputs:
