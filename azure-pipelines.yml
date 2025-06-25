@@ -13,10 +13,25 @@ variables:
 
 steps:
 - script: |
-    echo "=== Start Monitoring CPU & Memory Usage ==="
-    nohup top -b -d 1 > top_output.log &
-    echo $! > top_pid.txt
-  displayName: 'Start Resource Monitoring'
+    echo "AGENT NAME: $(AGENT_NAME)"
+    echo "RUNNING ON: $(Agent.MachineName)"
+  displayName: 'Info: Agent Info'
+  
+- script: |
+    echo "=== Record Start Time ==="
+    echo "START_TIME=$(date +%s)" >> time.env
+  displayName: 'Start Timer'
+
+- script: |
+    echo "=== Install pidstat for monitoring ==="
+    sudo apt-get update && sudo apt-get install -y sysstat
+  displayName: 'Install pidstat'
+
+- script: |
+    echo "=== Start Resource Monitoring ==="
+    nohup pidstat -r -u -h 1 > usage.log 2>&1 &
+    echo $! > pidstat.pid
+  displayName: 'Start Monitoring'
 
 - task: NodeTool@0
   inputs:
@@ -45,14 +60,20 @@ steps:
 
 - script: |
     echo "=== Stop Monitoring and Show Summary ==="
-    kill -9 $(cat top_pid.txt)
+    kill -9 $(cat pidstat.pid) || echo "pidstat already stopped"
 
-    echo "=== Summary CPU and Memory Usage ==="
-    echo "NOTE: This is a summary based on all outputs from 'top' command"
+    END_TIME=$(date +%s)
+    source time.env
+    TOTAL_TIME=$((END_TIME - START_TIME))
 
-    echo "Total CPU usage (avg %):"
-    awk '/^%Cpu/ { sum += $2 } END { print sum/NR }' top_output.log
+    echo "=============================="
+    echo "Total CI + CD Time: $TOTAL_TIME seconds"
+    echo "=============================="
+  displayName: 'Stop Monitoring & Measure Time'
 
-    echo "Total MEM usage (avg %):"
-    awk '/KiB Mem/ { used+=$8 } END { print used/NR }' top_output.log || echo "Gunakan metode pemrosesan manual jika parsing gagal"
-  displayName: 'Stop Monitoring & Show Summary'
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: 'usage.log'
+    ArtifactName: 'cpu-memory-usage'
+    publishLocation: 'Container'
+  displayName: 'Upload usage.log as Artifact'
