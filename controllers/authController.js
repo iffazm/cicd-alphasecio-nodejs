@@ -21,4 +21,10 @@ exports.login = async (req, res) => {
 
   const user = users.find((u) => u.email === email);
   if (!user) return res.status(400).json({ error: "User not found" });
+
+  const valid = await bcrypt.compare(password, user.password);
+  if (!valid) return res.status(401).json({ error: "Invalid password" });
+
+  const token = generateToken({ email: user.email }); // ✅ pakai dari utils
+  res.json({ token });
 };
