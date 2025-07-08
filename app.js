@@ -3,14 +3,13 @@ const path = require('path');
 
 // Import routers
 const indexRouter = require('./routes/index');
-const authRoutes = require('./routes/auth'); // ⬅️ Tambahin ini
+const authRoutes = require('./routes/auth');
 const todoRoutes = require('./routes/todo');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/auth', authRoutes);
